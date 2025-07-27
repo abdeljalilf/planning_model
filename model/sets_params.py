@@ -4,15 +4,25 @@ from pyomo.environ import *
 
 def define_sets_and_params(model, data):
     # === 1. ENSEMBLES ===
+    # model.I = Set(initialize=[0,1,2,3,4,5,6,7,8,9])  # Exemple d'initialisation
+    # model.J = Set(initialize=[0,1,2,3,4,5,6])  # Exemple d'initialisation
+    # model.H = Set(initialize=[0,1,2,3,4])  # Exemple d'initialisation
+    # model.C = Set(initialize=[0,1,2])  # Exemple d'initialisation
+    # model.K = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
+    # model.T = Set(initialize=[0,1,3,4,5,6,7,8,9,10])  # Exemple d'initialisation
     model.H = Set(initialize=data["H"])
     model.I = Set(initialize=[i - 1 for i in data["I_num"]])  # Ajustement pour correspondre à l'indexation de Pyomo
     model.J = Set(initialize=[j - 1 for j in data["J_num"]])  
     model.C = Set(initialize=[c - 1 for c in data["C_num"]])  
-    # model.K = Set(initialize=[k - 1 for k in data["K"]])  
-    # model.T = Set(initialize=[int(t)-1 for t in data["T"]])
-    model.K = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
-    model.T = Set(initialize=[0,1,2,3,4,5,6,])  # Exemple d'initialisation
-
+    model.K = Set(initialize=[k - 1 for k in data["K"]])  
+    model.T = Set(initialize=[int(t)-1 for t in data["T"]])
+    # # model.K = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
+    # # model.T = Set(initialize=[0,1,2,3,4,5,6,])  # Exemple d'initialisation
+    model.IHKT = Set(dimen=4, initialize=[
+        (i, h, k, t)
+        for h in model.H for i in model.I if data["U_ih"][h][i] == 1
+        for k in model.K for t in model.T
+    ])
     
     model.S = Set(initialize=[s - 1 for s in data["S_num"]])
     model.R = Set(initialize=[r - 1 for r in data["R_num"]])
@@ -50,6 +60,7 @@ def define_sets_and_params(model, data):
 
     model.Ait = Param(model.T, model.I, initialize=lambda m, t, i: data["Ait"][t][i ])
     model.U_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["U_ih"][h][i ])
+    model.R_ir = Param(model.R, model.I,  initialize=lambda m, r, i: data["R_ir"][r][ i])
 
     # === 5. PARAMÈTRES 3D ===
     model.Distor_ihc = Param(model.I, model.H, model.C, initialize=lambda m, i, h, c: data["Distor_ihc"][i ][h][c ])
