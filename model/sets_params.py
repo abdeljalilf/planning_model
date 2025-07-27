@@ -1,0 +1,58 @@
+# model/sets_params.py
+
+from pyomo.environ import *
+
+def define_sets_and_params(model, data):
+    # === 1. ENSEMBLES ===
+    model.H = Set(initialize=data["H"])
+    model.I = Set(initialize=[i - 1 for i in data["I_num"]])  # Ajustement pour correspondre à l'indexation de Pyomo
+    model.J = Set(initialize=[j - 1 for j in data["J_num"]])  
+    model.C = Set(initialize=[c - 1 for c in data["C_num"]])  
+    # model.K = Set(initialize=[k - 1 for k in data["K"]])  
+    # model.T = Set(initialize=[int(t)-1 for t in data["T"]])
+    model.K = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
+    model.T = Set(initialize=[0,1,2,3,4,5,6,])  # Exemple d'initialisation
+
+    
+    model.S = Set(initialize=[s - 1 for s in data["S_num"]])
+    model.R = Set(initialize=[r - 1 for r in data["R_num"]])
+
+    model.QS_mines = Set(initialize=[i - 1 for i in data["QS_mines"]])
+    model.QS_Sc1 = Set(initialize=[i - 1 for i in data["QS_Sc1"]])
+    model.QS_Sc2 = Set(initialize=[i - 1 for i in data["QS_Sc2"]])
+    model.QS_Se = Set(initialize=[i - 1 for i in data["QS_Se"]])
+    model.QSL_Sf1 = Set(initialize=[i - 1 for i in data["QSL_Sf1"]])
+    
+    # === 2. PARAMÈTRES SCALAIRES ===
+    model.Sigma_3 = Param(initialize=data["Sigma_3"][0])
+    model.RC_tm = Param(initialize=data["RC_tm"][0])
+    model.RC_if = Param(initialize=data["RC_if"][0])
+    # === 3. PARAMÈTRES 1D ===
+    model.Sigma_c = Param(model.C, initialize=lambda m, c: data["Sigma_c"][c])
+    model.Sigma_h = Param(model.H, initialize=lambda m, h: data["Sigma_h"][h])
+    model.D_k = Param(model.K, initialize=lambda m, k: data["D_k"][k ])
+    model.lamda_k = Param(model.K, initialize=lambda m, k: data["lamda_k"][k ]-1)
+    model.E_k = Param(model.K, initialize=lambda m, k: data["E_k"][k ])
+    model.L_k = Param(model.K, initialize=lambda m, k: data["L_k"][k ])
+    model.debit_r = Param(model.R, initialize=lambda m, r: data["debit_r"][r ])
+    model.Stock_initial_i = Param(model.I, initialize=lambda m, i: data["Stock_initial_i"][i ])
+
+    # === 4. PARAMÈTRES 2D ===
+    model.Sigma_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["Sigma_ih"][h][i ])
+    model.TempsTrait_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["TempsTrait_ih"][h][i ])
+    model.eta_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["eta_ih"][h][i ])
+    model.Alpha_ic = Param(model.C, model.I, initialize=lambda m, c, i: data["Alpha_ic"][c ][i ])
+    model.TauxDispo_rt = Param(model.T, model.R,  initialize=lambda m, t, r: data["TauxDispo_rt"][t ][r ])
+
+    model.BetaMin_cj = Param(model.J, model.C, initialize=lambda m, j, c: data["BetaMin_cj"][j ][c ])
+    model.BetaMax_cj = Param(model.J, model.C, initialize=lambda m, j, c: data["BetaMax_cj"][j ][c ])
+    model.Cible_cj = Param(model.J, model.C, initialize=lambda m, j, c: data["Cible_cj"][j ][c ])
+
+    model.Ait = Param(model.T, model.I, initialize=lambda m, t, i: data["Ait"][t][i ])
+    model.U_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["U_ih"][h][i ])
+
+    # === 5. PARAMÈTRES 3D ===
+    model.Distor_ihc = Param(model.I, model.H, model.C, initialize=lambda m, i, h, c: data["Distor_ihc"][i ][h][c ])
+    model.TempsUtilis_ihr = Param(model.I, model.H, model.R, initialize=lambda m, i, h, r: data["TempsUtilis_ihr"][i ][h][r ]) 
+    
+    return model
