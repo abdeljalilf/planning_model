@@ -4,27 +4,25 @@ from pyomo.environ import *
 
 def define_sets_and_params(model, data):
     # === 1. ENSEMBLES ===
-    # model.I = Set(initialize=[0,1,2,3,4,5,6,7,8,9])  # Exemple d'initialisation
+    # model.I = Set(initialize=[0,1,2,3,4,5,6,7,])  # Exemple d'initialisation
     # model.J = Set(initialize=[0,1,2,3,4,5,6])  # Exemple d'initialisation
     # model.H = Set(initialize=[0,1,2,3,4])  # Exemple d'initialisation
-    # model.C = Set(initialize=[0,1,2])  # Exemple d'initialisation
-    # model.K = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
-    # model.T = Set(initialize=[0,1,3,4,5,6,7,8,9,10])  # Exemple d'initialisation
+    model.K = Set(initialize=[0,1,2,3])  # Exemple d'initialisation
+    model.T = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
+    
+    model.C = Set(initialize=[0,])  # Exemple d'initialisation
+    
+    # model.C = Set(initialize=[c - 1 for c in data["C_num"]])  
     model.H = Set(initialize=data["H"])
     model.I = Set(initialize=[i - 1 for i in data["I_num"]])  # Ajustement pour correspondre à l'indexation de Pyomo
     model.J = Set(initialize=[j - 1 for j in data["J_num"]])  
-    model.C = Set(initialize=[c - 1 for c in data["C_num"]])  
-    model.K = Set(initialize=[k - 1 for k in data["K"]])  
-    model.T = Set(initialize=[int(t)-1 for t in data["T"]])
-    # # model.K = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
-    # # model.T = Set(initialize=[0,1,2,3,4,5,6,])  # Exemple d'initialisation
-    model.IHKT = Set(dimen=4, initialize=[
-        (i, h, k, t)
-        for h in model.H for i in model.I if data["U_ih"][h][i] == 1
-        for k in model.K for t in model.T
-    ])
+    # model.K = Set(initialize=[k - 1 for k in data["K"]])  
+    # model.T = Set(initialize=[int(t)-1 for t in data["T"]])
     
-    model.S = Set(initialize=[s - 1 for s in data["S_num"]])
+
+    model.S = Set(initialize=[s - 1 for s in data["S_num"][:len(model.I)]])
+
+    # model.S = Set(initialize=[s - 1 for s in data["S_num"]])  # Ajustement pour correspondre à l'indexation de Pyomo
     model.R = Set(initialize=[r - 1 for r in data["R_num"]])
 
     model.QS_mines = Set(initialize=[i - 1 for i in data["QS_mines"]])
@@ -37,6 +35,8 @@ def define_sets_and_params(model, data):
     model.Sigma_3 = Param(initialize=data["Sigma_3"][0])
     model.RC_tm = Param(initialize=data["RC_tm"][0])
     model.RC_if = Param(initialize=data["RC_if"][0])
+    model.M_max = Param(initialize=data["M_max"][0])
+    model.M_min = Param(initialize=data["M_min"][0])
     # === 3. PARAMÈTRES 1D ===
     model.Sigma_c = Param(model.C, initialize=lambda m, c: data["Sigma_c"][c])
     model.Sigma_h = Param(model.H, initialize=lambda m, h: data["Sigma_h"][h])
