@@ -7,8 +7,8 @@ def define_sets_and_params(model, data):
     # model.I = Set(initialize=[0,1,2,3,4,5,6,7,])  # Exemple d'initialisation
     # model.J = Set(initialize=[0,1,2,3,4,5,6])  # Exemple d'initialisation
     # model.H = Set(initialize=[0,1,2,3,4])  # Exemple d'initialisation
-    model.K = Set(initialize=[0,1,2,3])  # Exemple d'initialisation
-    model.T = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
+    # model.K = Set(initialize=[0,1,2,3])  # Exemple d'initialisation
+    # model.T = Set(initialize=[0,1,2,3,4,5])  # Exemple d'initialisation
     
     model.C = Set(initialize=[0,])  # Exemple d'initialisation
     
@@ -16,8 +16,8 @@ def define_sets_and_params(model, data):
     model.H = Set(initialize=data["H"])
     model.I = Set(initialize=[i - 1 for i in data["I_num"]])  # Ajustement pour correspondre à l'indexation de Pyomo
     model.J = Set(initialize=[j - 1 for j in data["J_num"]])  
-    # model.K = Set(initialize=[k - 1 for k in data["K"]])  
-    # model.T = Set(initialize=[int(t)-1 for t in data["T"]])
+    model.K = Set(initialize=[k - 1 for k in data["K"]])  
+    model.T = Set(initialize=[int(t)-1 for t in data["T"]])
     
 
     model.S = Set(initialize=[s - 1 for s in data["S_num"][:len(model.I)]])
@@ -31,6 +31,21 @@ def define_sets_and_params(model, data):
     model.QS_Se = Set(initialize=[i - 1 for i in data["QS_Se"]])
     model.QSL_Sf1 = Set(initialize=[i - 1 for i in data["QSL_Sf1"]])
     
+    model.U_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["U_ih"][h][i ])
+    model.R_ir = Param(model.R, model.I,  initialize=lambda m, r, i: data["R_ir"][r][ i])
+    
+    model.IHKT_valid = Set(
+        dimen=4,
+        initialize=[
+            (i, h, k, t)
+            for i in model.I
+            for h in model.H
+            for k in model.K
+            for t in model.T
+            if model.U_ih[h, i] == 1
+        ]
+    )
+
     # === 2. PARAMÈTRES SCALAIRES ===
     model.Sigma_3 = Param(initialize=data["Sigma_3"][0])
     model.RC_tm = Param(initialize=data["RC_tm"][0])
@@ -59,8 +74,7 @@ def define_sets_and_params(model, data):
     model.Cible_cj = Param(model.J, model.C, initialize=lambda m, j, c: data["Cible_cj"][j ][c ])
 
     model.Ait = Param(model.T, model.I, initialize=lambda m, t, i: data["Ait"][t][i ])
-    model.U_ih = Param(model.H, model.I, initialize=lambda m, h, i: data["U_ih"][h][i ])
-    model.R_ir = Param(model.R, model.I,  initialize=lambda m, r, i: data["R_ir"][r][ i])
+
 
     # === 5. PARAMÈTRES 3D ===
     model.Distor_ihc = Param(model.I, model.H, model.C, initialize=lambda m, i, h, c: data["Distor_ihc"][i ][h][c ])
