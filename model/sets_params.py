@@ -14,10 +14,10 @@ def define_sets_and_params(model, data):
     
     # model.C = Set(initialize=[c - 1 for c in data["C_num"]])  
     model.H = Set(initialize=data["H"])
-    model.I = Set(initialize=[i  for i in data["I_num"]])  
+    model.I = Set(initialize=[i  for i in data["I_num"][:9]])  
     model.J = Set(initialize=[j for j in data["J_num"]])  
-    model.K = Set(initialize=[k  for k in data["K"]])  
-    model.T = Set(initialize=[int(t) for t in data["T"]])
+    model.K = Set(initialize=[k  for k in data["K"][:6]])  
+    model.T = Set(initialize=[int(t) for t in data["T"][:14]])
     model.T_s = Set(initialize=[0] + [int(t) for t in data["T"]])  
     model.C = Set(initialize=[1,])  # Exemple d'initialisation
     

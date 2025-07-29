@@ -1,7 +1,7 @@
 import shutil
 from pyomo.environ import SolverFactory, SolverStatus
 
-def solve_model(model, solver_name="scip", tee=False, mipgap=0.15):
+def solve_model(model, solver_name="scip", tee=False, mipgap=0.5):
     # 1. Chemin vers scip.exe
     scip_path = shutil.which("scip")
     if scip_path is None:

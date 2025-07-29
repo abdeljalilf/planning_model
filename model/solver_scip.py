@@ -1,7 +1,7 @@
 import shutil
 from pyomo.environ import *
 
-def solve_model(model, solver_name="scip", tee=False, mipgap=0.1):
+def solve_model(model, solver_name="scip", tee=False, mipgap=0.02):
     # Spécifie le chemin complet vers le binaire scip.exe
     scip_path = shutil.which("scip")
     if scip_path is None:
