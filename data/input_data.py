@@ -56,14 +56,14 @@ def get_all_data(path='data/input_data_.xlsx'):
     current_block = []
 
     total_dims = {
-        "I": len(data.get("I", [])),
+        "I": len(data.get("I_num", [])),
         "H": len(data.get("H", [])),
-        "C": len(data.get("C", [])),
-        "J": len(data.get("J", [])),
+        "C": len(data.get("C_num", [])),
+        "J": len(data.get("J_num", [])),
         "K": len(data.get("K", [])),
         "T": len(data.get("T", [])),
-        "R": len(data.get("R", [])),
-        "S": len(data.get("S", []))
+        "R": len(data.get("R_num", [])),
+        "S": len(data.get("S_num", []))
     }
 
     for i in range(df3d.shape[0]):

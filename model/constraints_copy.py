@@ -22,8 +22,8 @@ def add_constraints(model, data):
     TauxDispo_rt = model.TauxDispo_rt
     # Variables requises
     x_ihkt = model.x_ihkt
-    o_ihkt = model.o_ihkt
-    y_ihkt = model.y_ihkt
+    # o_ihkt = model.o_ihkt
+    # y_ihkt = model.y_ihkt
     # def get_IHKT_valid(I, H, K, T, U_ih, var_fixe=None):
     #     """
     #     Crée la liste des tuples (i, h, k, t) tels que U_ih[h,i]==1,
@@ -78,8 +78,8 @@ def add_constraints(model, data):
         ]
 
     
-    M_max = 1e5  # Grande constante, utilisée pour linéariser
-    M_min = 10  # Grande constante, utilisée pour linéariser
+    M_max = 1e10  # Grande constante, utilisée pour linéariser
+    M_min = 100  # Grande constante, utilisée pour linéariser
     
     # Contrainte (1) : Satisfaction de la demande avec pertes
     def demande_avec_pertes_rule(m, k):
@@ -111,32 +111,17 @@ def add_constraints(model, data):
         return sum(m.o_ihkt[i, h, k, t] for (i, h, k, t) in tuples_valides) <= 1
     model.MonoGamme = Constraint(model.I, model.K, model.T, rule=mono_gamme_rule)
 
-    # # === (5) : définition de y_ihkt avec borne max
-    # def y_upper_rule(m, i, h, k, t):
-    #     return m.y_ihkt[i, h, k, t] <= m.o_ihkt[i, h, k, t]
-        
-    # model.LiaisonY = Constraint(model.IHKT_valid, rule=y_upper_rule)
-
-    # def y_def_rule(m, i, h, k, t):
-    #     return m.y_ihkt[i, h, k, t] == m.x_ihkt[i, h, k, t] / M_max
-    # model.DefinitionY = Constraint(model.IHKT_valid, rule=y_def_rule)
-
-    # # === (6) : définition de z_ihkt avec borne min
-    # def z_lower_rule(m, i, h, k, t):
-    #     return m.z_ihkt[i, h, k, t] >= m.o_ihkt[i, h, k, t]
-    # model.LiaisonZ = Constraint(model.IHKT_valid, rule=z_lower_rule)
-
-    # def z_def_rule(m, i, h, k, t):
-    #     return m.z_ihkt[i, h, k, t] == m.x_ihkt[i, h, k, t] / M_min
-    # model.DefinitionZ = Constraint(model.IHKT_valid, rule=z_def_rule)
     # === (5-6) Linéarisation simple via Big-M
-    def x_upper_rule(m, i, h, k, t):
-        return m.x_ihkt[i, h, k, t] <= m.o_ihkt[i, h, k, t] * M_max
-    model.BigM_Upper = Constraint(model.IHKT_valid, rule=x_upper_rule)
+# (1) Si o_ihkt = 0 → x_ihkt = 0
+    def upper_x_by_o(m, i, h, k, t):
+        return m.x_ihkt[i, h, k, t] <= M_max * m.o_ihkt[i, h, k, t]
+    model.BigM_Upper = Constraint(model.IHKT_valid, rule=upper_x_by_o)
 
-    def x_lower_rule(m, i, h, k, t):
-        return m.x_ihkt[i, h, k, t] >= m.o_ihkt[i, h, k, t] * M_min
-    model.BigM_Lower = Constraint(model.IHKT_valid, rule=x_lower_rule)
+    # (2) Si o_ihkt = 1 → x_ihkt >= M_min
+    def lower_x_by_o(m, i, h, k, t):
+        return m.x_ihkt[i, h, k, t] >= M_min * m.o_ihkt[i, h, k, t]
+    model.BigM_Lower = Constraint(model.IHKT_valid, rule=lower_x_by_o)
+
 
     
     # === (7) : Fenêtre de temps de livraison (borne inférieure et supérieure combinées)
@@ -216,7 +201,11 @@ def add_constraints(model, data):
     def init_stock_rule(m, i):
         return m.S_it[i, 0] == m.Stock_initial_i[i]
     model.InitStock = Constraint(I, rule=init_stock_rule)
-
+    # === (19)  : stock positif
+    def stock_positif_rule(m, i, t):
+        return m.S_it[i, t] >= 0
+    model.StockPositif = Constraint(model.I, model.T, rule=stock_positif_rule)
+    
     # === (14) QS_mines : stock augmente par Ait, puis consommé
     def stock_mines_rule(m, i, t):
         if t == 0 or i not in I:
@@ -262,11 +251,6 @@ def add_constraints(model, data):
         )
     model.StockQSLsf1 = Constraint(model.QSL_Sf1, model.T, rule=stock_Sf1_rule)
 
-    # === (19)  : stock positif
-    def stock_positif_rule(m, i, t):
-        return m.S_it[i, t] >= 0
-    model.StockPositif = Constraint(model.I, model.T, rule=stock_positif_rule)
-
     
     # === Contrainte (20) : Calcul de delta_ck selon la distance à la cible
     def delta_ck_inf_rule(m, c, k):
@@ -277,5 +261,8 @@ def add_constraints(model, data):
 
     model.DeltaInf = Constraint(C, K, rule=delta_ck_inf_rule)
     model.DeltaSup = Constraint(C, K, rule=delta_ck_sup_rule)
+    
+
+
 
     return model

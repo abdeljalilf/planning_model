@@ -1,0 +1,35 @@
+# Ignore everything by default
+*
+
+# ✅ Garde tous les fichiers Python
+!*.py
+!*.ipynb
+
+# ✅ Garde le fichier d'entrée principal
+!data/input_data_.xlsx
+
+# ✅ Garde ce fichier gitignore lui-même
+!.gitignore
+
+# ✅ Garde les dossiers nécessaires
+!data/
+!model/
+
+# 🔴 Ignore tous les autres fichiers Excel
+*.xlsx
+!data/input_data_.xlsx  # <-- exception déjà gérée
+
+# 🔴 Ignore les fichiers LP
+*.lp
+
+# 🔴 Ignore les résultats CSV et images
+*.csv
+*.png
+
+# 🔴 Ignore les fichiers temporaires ou cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 🔴 Ignore les fichiers texte et autres
+*.txt

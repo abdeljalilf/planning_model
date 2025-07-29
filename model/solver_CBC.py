@@ -1,7 +1,7 @@
 import shutil
 from pyomo.environ import *
 
-def solve_model(model, solver_name="cbc", tee=False, mipgap=0.001):
+def solve_model(model, solver_name="cbc", tee=False, mipgap=0.02):
     cbc_path = shutil.which("cbc")
     if cbc_path is None:
         cbc_path = "C:/Cbc/bin/cbc.exe"   # Mets ici le bon chemin si besoin

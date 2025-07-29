@@ -7,7 +7,6 @@ from model.variables import define_variables
 from model.objective import define_objective
 from model.solver_GLPK import solve_model
 from model.solver_CBC import solve_model
-from model.constraints import add_constraints
 from model.constraints_copy import add_constraints
 from pyomo.util.infeasible import log_infeasible_constraints
 import logging

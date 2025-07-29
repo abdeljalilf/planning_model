@@ -14,7 +14,7 @@ def solve_model(model, solver_name="glpk", tee=False):
         raise RuntimeError(f"❌ Le solveur '{solver_name}' n'est pas disponible même avec chemin : {glpsol_path}")
 
     print(f"✅ Le solveur '{solver_name}' est disponible. Lancement de la résolution...")
-    solver.options['mipgap'] = 0.001  # 2% de gap
+    solver.options['mipgap'] = 0.02  # 2% de gap
     result = solver.solve(model, tee=tee)
 
     if result.solver.status != SolverStatus.ok and result.solver.status != SolverStatus.aborted:
