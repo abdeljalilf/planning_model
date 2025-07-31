@@ -1,20 +1,22 @@
 # main.py
-
 from data.input_data import get_all_data
 from pyomo.environ import *
 from model.sets_params import define_sets_and_params
 from model.variables import define_variables
 from model.objective import define_objective
-from model.solver_GLPK import solve_model
-from model.solver_CBC import solve_model
-from model.constraints_copy import add_constraints
-from pyomo.util.infeasible import log_infeasible_constraints
-import logging
-logging.basicConfig(level=logging.INFO)
+import model.affichage as affichage
+# from model.solver_GLPK import solve_model
+# from model.solver_CBC import solve_model
+from model.solver_scip import solve_model
+# from model.solver_scip_FAST import solve_model
+# from model.solver_scip_STRONG import solve_model
+from planning_model.model.constraints import add_constraints
+
 
 def main():
     # 1. Chargement des données
     data = get_all_data()
+    print("Données chargées avec succès.")
     # 2. Création du modèle Pyomo
     model = ConcreteModel()
     model = define_sets_and_params(model, data)
@@ -43,18 +45,6 @@ def main():
     # 3. Résolution
     result = solve_model(model, tee=True)
     model.write('modele.lp', io_options={'symbolic_solver_labels': True})
-
-     
-    print("\n------ QUALITÉ DES COMPOSANTS (ratio) ---------")       
-    for c in model.C:
-        for k in list(model.K)[:2]:
-            mu = model.mu_ck[c, k].value or 0
-            D = model.D_k[k]
-            ratio = mu / D if D > 0 else 0
-            j = model.lamda_k[k]
-            bmin = model.BetaMin_cj[j, c]
-            bmax = model.BetaMax_cj[j, c]
-            print(f"c={c}, k={k}: ratio={ratio:.4f}  [{bmin}, {bmax}]")
 
 
     # 5. Affichage valeur fonction objectif
