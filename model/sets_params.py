@@ -12,14 +12,14 @@ def define_sets_and_params(model, data):
     # model.T_s = Set(initialize=[0,1,2,3,4,5,6,7,8,9,10])  # Exemple d'initialisation
     
     
-    # model.C = Set(initialize=[c - 1 for c in data["C_num"]])  
+    model.C = Set(initialize=[c  for c in data["C_num"]])  
     model.H = Set(initialize=data["H"])
     model.I = Set(initialize=[i  for i in data["I_num"][:]])  
     model.J = Set(initialize=[j for j in data["J_num"]])  
     model.K = Set(initialize=[k  for k in data["K"][:]])  
     model.T = Set(initialize=[int(t) for t in data["T"][:]])
     model.T_s = Set(initialize=[0] + [int(t) for t in data["T"]])  
-    model.C = Set(initialize=[1,2,3,4])  # Exemple d'initialisation
+    # model.C = Set(initialize=[1,2,3,4])  # Exemple d'initialisation
     
     model.S = Set(initialize=[s  for s in data["S_num"][:len(model.I)]])
     model.R = Set(initialize=[r  for r in data["R_num"]])
@@ -96,9 +96,9 @@ def define_sets_and_params(model, data):
         (i,h,k,t)
         for i in (model.QS_mines | model.QS_Sc1 | model.QS_Sc2  | model.QSL_Sf1) & model.I
         if model.R_ir[r_R2rule, i] == 1
-        for h in [0, 3, 4] if model.U_ih[h, i] == 1
+        for h in [0, 2,3, 4] if model.U_ih[h, i] == 1
         for k in model.K
-        for t in model.T if t- model.TempsUtilis_ihr[i, h, r_R2rule] >=  1
+        for t in model.T #if t- model.TempsUtilis_ihr[i, h, r_R2rule] >=  1
         
     ]) 
     
@@ -108,7 +108,7 @@ def define_sets_and_params(model, data):
         for i in model.I if model.R_ir[r_R3rule, i] == 1
         for h in model.H if model.U_ih[h, i] == 1
         for k in model.K
-        for t in model.T if t- model.TempsUtilis_ihr[i, h, r_R3rule] >=  1
+        for t in model.T #if t- model.TempsUtilis_ihr[i, h, r_R3rule] >=  1
     ])
     
     r_TM_rule = model.R.at(1)
@@ -117,16 +117,16 @@ def define_sets_and_params(model, data):
         for i in (model.QS_mines & model.I) if model.R_ir[r_TM_rule, i] == 1
         for h in [2, 3] if model.U_ih[h, i] == 1
         for k in model.K
-        for t in model.T if t- model.TempsUtilis_ihr[i, h, r_TM_rule] >=  1
+        for t in model.T #if t- model.TempsUtilis_ihr[i, h, r_TM_rule] >=  1
         ])
                                                         
     r_IF_rule = model.R.at(2)
     model.IHKT_for_IF_rule = Set( dimen=4, initialize=[
-        (i, 1, k, t)
+        (i, h, k, t)
         for i in (model.QS_mines & model.I) if model.R_ir[r_IF_rule, i] == 1 
         for h in [1] if model.U_ih[h, i] == 1
         for k in model.K
-        for t in model.T if t- model.TempsUtilis_ihr[i, h, r_IF_rule] >=  1
+        for t in model.T #if t- model.TempsUtilis_ihr[i, h, r_IF_rule] >=  1
     ])
     
     r_laverie_rule = model.R.at(3)
@@ -136,7 +136,7 @@ def define_sets_and_params(model, data):
             if model.R_ir[r_laverie_rule, i] == 1
             for h in [ 3, 4] if model.U_ih[h, i] == 1
             for k in model.K
-            for t in model.T if t- model.TempsUtilis_ihr[i, h, r_laverie_rule] >=  1
+            for t in model.T #if t- model.TempsUtilis_ihr[i, h, r_laverie_rule] >=  1
         ]
     )
     

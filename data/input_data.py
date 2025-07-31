@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-def get_all_data(path='data/input_data_.xlsx'):
+def get_all_data(path='data/input_data_ - Copie (2).xlsx'):
     data = {}
 
     # === 1. LECTURE DE Matrix1D ===

@@ -36,7 +36,7 @@ def extract_blending_results(model):
                 "t": t ,
                 "x_ihkt (tonnes)": val,
                 "Real_X_ihkt": real_val ,  # Conversion en tonnes
-                "o_ihkt (binaire)": binary_val,
+                # "o_ihkt (binaire)": binary_val,
                 "E_k": E_k[k],
                 "L_k": L_k[k],
                 "Quantity commande": commande[k]
@@ -204,13 +204,13 @@ def compute_resource_utilization(model, data):
                 continue  # ignore si pas défini
             ihkt_set = resource_sets[r]
             if use_eta[r]:
-                flux = sum(float(model.eta_ih[h, i]) * model.x_ihkt[i, h, k, t+1].value
-                           for (i, h, k, t2) in ihkt_set if t2 == t+1
-                           if model.x_ihkt[i, h, k, t+1].value is not None)
+                flux = sum(float(model.eta_ih[h, i]) * model.x_ihkt[i, h, k, t].value
+                           for (i, h, k, t2) in ihkt_set if t2 == t
+                           if model.x_ihkt[i, h, k, t].value is not None)
             else:
-                flux = sum(model.x_ihkt[i, h, k, t+1].value
-                           for (i, h, k, t2) in ihkt_set if t2 == t+1
-                           if model.x_ihkt[i, h, k, t+1].value is not None)
+                flux = sum(model.x_ihkt[i, h, k, t].value
+                           for (i, h, k, t2) in ihkt_set if t2 == t
+                           if model.x_ihkt[i, h, k, t].value is not None)
             cap = float(model.debit_r[r]) * float(model.TauxDispo_rt[t, r])
             taux = flux / cap if cap > 1e-8 else None
             results.append({

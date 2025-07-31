@@ -25,8 +25,8 @@ def add_constraints(model, data):
     o_ihkt = model.o_ihkt
     
     
-    N_max_commandes_t = 4  # exemple
-    StockFinalMax = 100000
+
+    
     M_max = 1e10  # Grande constante, utilisée pour linéariser
     M_min = 500  # Grande constante, utilisée pour linéariser
     
@@ -75,7 +75,7 @@ def add_constraints(model, data):
     # === (7) : Fenêtre de temps de livraison (borne inférieure et supérieure combinées)
     # borne inférieure
     def fenetre_livraison_inf_rule(m, i, h, k, t):
-        return m.E_k[k] * m.o_ihkt[i, h, k, t] <= (t ) * m.o_ihkt[i, h, k, t]
+        return m.E_k[k] * m.o_ihkt[i, h, k, t] <= (t + m.TempsTrait_ih[h, i]) * m.o_ihkt[i, h, k, t]
 
     # borne supérieure
     def fenetre_livraison_sup_rule(m, i, h, k, t):
@@ -88,8 +88,8 @@ def add_constraints(model, data):
     def capacite_R2_rule(m, t):
         r = m.R.at(4)  # r = 4 
         terms = [
-            m.eta_ih[h, i] * x_ihkt[i, h, k, t]
-            for (i, h, k, t2) in model.IHKT_for_R2_rule if t2 == t
+            m.eta_ih[h, i] * x_ihkt[i, h, k, int(t - TempsUtilis_ihr[i, h, r])]
+            for (i, h, k, t2) in model.IHKT_for_R2_rule if t2 == int(t - TempsUtilis_ihr[i, h, r])
         ]
         if not terms:
             return Constraint.Skip  # Pas de terme = pas de contrainte à générer
@@ -99,8 +99,8 @@ def add_constraints(model, data):
     def capacite_R3_rule(m, t):
         r = m.R.at(5)  # r = 5
         terms = [
-            m.eta_ih[h, i] * x_ihkt[i, h, k, t]
-            for (i, h, k, t2) in model.IHKT_for_R3_rule if t2 == t
+            m.eta_ih[h, i] * x_ihkt[i, h, k, int(t - TempsUtilis_ihr[i, h, r])]
+            for (i, h, k, t2) in model.IHKT_for_R3_rule if t2 == int(t - TempsUtilis_ihr[i, h, r])
         ]
         if not terms:
             return Constraint.Skip
@@ -111,8 +111,8 @@ def add_constraints(model, data):
     def capacite_TM_rule(m, t):
         r = m.R.at(1)  # r = 1
         terms = [
-            x_ihkt[i, h, k, t]
-            for (i, h, k, t2) in model.IHKT_for_TM_rule if t2 == t
+            x_ihkt[i, h, k, int(t - TempsUtilis_ihr[i, h, r])]
+            for (i, h, k, t2) in model.IHKT_for_TM_rule if t2 == int(t - TempsUtilis_ihr[i, h, r])
         ]
         if not terms:
             return Constraint.Skip
@@ -123,8 +123,8 @@ def add_constraints(model, data):
     def capacite_IF_rule(m, t):
         r = m.R.at(2)  # r = 2 
         terms = [
-            x_ihkt[i, h, k, t]
-            for (i, h, k, t2) in model.IHKT_for_IF_rule if t2 == t
+            x_ihkt[i, h, k, int(t - TempsUtilis_ihr[i, h, r])]
+            for (i, h, k, t2) in model.IHKT_for_IF_rule if t2 == int(t - TempsUtilis_ihr[i, h, r])
         ]
         if not terms:
             return Constraint.Skip
@@ -135,8 +135,8 @@ def add_constraints(model, data):
     def capacite_laverie_rule(m, t):
         r = m.R.at(3)  # r = 3
         terms = [
-            x_ihkt[i, h, k, t]
-            for (i, h, k, t2) in model.IHKT_for_laverie_rule if t2 == t
+            x_ihkt[i, h, k, int(t - TempsUtilis_ihr[i, h, r])]
+            for (i, h, k, t2) in model.IHKT_for_laverie_rule if t2 == int(t - TempsUtilis_ihr[i, h, r])
         ]
         if not terms:
             return Constraint.Skip
@@ -202,20 +202,8 @@ def add_constraints(model, data):
     def stock_positif_rule(m, i, t):
         return m.S_it[i, t] >= 0
     model.StockPositif = Constraint(model.I, model.T, rule=stock_positif_rule)
-    
 
-    def stock_final_max_rule(m, t):
-        return sum(m.x_ihkt[i, h, k, t+ m.TempsTrait_ih[h, i]] 
-            for (i, h, k, t2) in model.IHKT_valid if t2 == t + m.TempsTrait_ih[h, i]) <= StockFinalMax
-    model.StockFinalMax = Constraint(model.T, rule=stock_final_max_rule)
-    
-    
-    def nb_commandes_simultanées_rule(m, t):
-        return sum(o_ihkt[i,h,k,t] 
-                   for (i, h, k, t2) in model.IHKT_valid if t2 == t + m.TempsTrait_ih[h, i]) <=N_max_commandes_t
-    model.NbCommandesSimultanees = Constraint(model.T, rule=nb_commandes_simultanées_rule)
-
-    
+        
     # === Contrainte (20) : Calcul de delta_ck selon la distance à la cible
     def delta_ck_inf_rule(m, c, k):
         return m.delta_ck[c, k] >= m.mu_ck[c, k] - D_k[k] * Cible_cj[lamda_k[k], c]

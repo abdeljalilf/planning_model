@@ -1,16 +1,21 @@
 # main.py
 from data.input_data import get_all_data
 from pyomo.environ import *
+import pickle
+from pyomo.opt import WriterFactory
+import os
+import json
 from model.sets_params import define_sets_and_params
 from model.variables import define_variables
 from model.objective import define_objective
 import model.affichage as affichage
+import model.Save as save
 # from model.solver_GLPK import solve_model
 # from model.solver_CBC import solve_model
 from model.solver_scip import solve_model
 # from model.solver_scip_FAST import solve_model
 # from model.solver_scip_STRONG import solve_model
-from planning_model.model.constraints import add_constraints
+from model.constraints import add_constraints
 
 
 def main():
@@ -44,8 +49,10 @@ def main():
 
     # 3. Résolution
     result = solve_model(model, tee=True)
-    model.write('modele.lp', io_options={'symbolic_solver_labels': True})
+    
+    # sauvegarde des resultats
 
+    save.save_solution(model)
 
     # 5. Affichage valeur fonction objectif
     try:
